@@ -1,0 +1,77 @@
+@import 'vars';
+
+.converter-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: calc(100vh - 58px);
+
+    .currency {
+        max-width: 300px;
+        width: 100%;
+        &__option {
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            font-size: 18px;
+            .identification {
+                display: flex;
+                align-items: center;
+                margin-right: 15px;
+
+                img {
+                    width: 30px;
+                    margin-right: 10px;
+                }
+            }
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            background-color: $c-gray;
+            border-top-left-radius: 6px;
+            border-top-right-radius: 6px;
+            margin-top: 15px;
+            font-size: 20px;
+            border: none;
+            border-bottom: 2px solid $c-blue;
+            outline: none;
+
+            &:focus {
+                border-bottom: 2px solid green;
+            }
+        }
+    }
+
+    .btn-reverse {
+        cursor: pointer;
+        color: green;
+        margin: 0 20px;
+        svg {
+            width: 30px;
+        }
+    }
+
+    
+}
+
+:host {
+    ::ng-deep {
+        .ng-select.ng-select-single .ng-select-container {
+            height: 55px;
+        }
+    }
+}
+
+@media(max-width: 767px) {
+    .converter-wrapper {
+        flex-direction: column;
+
+        .btn-reverse {
+            margin: 20px 0px;
+            transform: rotate(90deg);
+        }
+    }
+}
+

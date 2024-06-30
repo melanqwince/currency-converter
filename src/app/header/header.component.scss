@@ -1,0 +1,27 @@
+@import 'vars';
+
+header {
+    background-color: $c-blue;
+    padding: 20px 0;
+    color: $c-white;
+
+    .prices {
+        display: flex;
+
+        p {
+            margin: 0;
+
+            &:not(:last-child) {
+                margin-right: 30px;
+            }
+        }
+    }
+}
+
+@media(max-width: 767px) {
+    header {
+        .prices {
+            justify-content: center;
+        }
+    }
+}
