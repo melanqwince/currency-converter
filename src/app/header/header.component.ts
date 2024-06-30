@@ -17,11 +17,9 @@ export class HeaderComponent {
   constructor(private dataService: DataService) {
     this.dataService.priceUSD.subscribe((price) => {
       this.priceUSD = price;
-      console.log(price);
     });
     this.dataService.priceEUR.subscribe((price) => {
       this.priceEUR = price;
-      console.log(price);
     });
   }
 
