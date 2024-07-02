@@ -1,6 +1,6 @@
 <div class="converter-wrapper">
     <div class="currency currency--from">
-        <ng-select [clearable]="false" (change)="currencyAmountFromChanges()" [(ngModel)]="selectedFromCurrency">
+        <ng-select [searchable]="false" [clearable]="false" (change)="currencyAmountFromChanges()" [(ngModel)]="selectedFromCurrency">
             @for (currency of currencies; track currency.value) {
                 <ng-option [value]="currency.value">
                     <div class="currency__option">
@@ -23,7 +23,7 @@
         </svg>          
     </div>
     <div class="currency currency--to">
-        <ng-select [clearable]="false" (change)="currencyAmountFromChanges()" [(ngModel)]="selectedToCurrency">
+        <ng-select [searchable]="false" [clearable]="false" (change)="currencyAmountFromChanges()" [(ngModel)]="selectedToCurrency">
             @for (currency of currencies; track currency.value) {
                 <ng-option [value]="currency.value">
                     <div class="currency__option">

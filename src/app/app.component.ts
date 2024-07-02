@@ -22,7 +22,7 @@ export class AppComponent {
 
   ngOnInit() {
     const rates = this.dataService.getConversionRates();
-    console.log(rates);
+    
     //check if rates exist with standart currency - EUR
     if (rates && rates['EUR']) {
       this.baseUSDRates = rates;
