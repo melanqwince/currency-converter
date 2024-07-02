@@ -50,16 +50,22 @@ export class ConverterComponent implements OnInit, OnChanges {
   }
 
   handleCurrencyChanges(changedControlName: string, targetControlName: string) {
-    this.converterForm.get(changedControlName)!.valueChanges.subscribe((val: CurrencySelection) => {
-      const targetControl = this.converterForm.get(targetControlName)!.value;
-      const amountCurrency = this.calculateAmount(val.amountCurrency, val.selectedCurrency, targetControl.selectedCurrency);
-      this.converterForm.patchValue({
-        [targetControlName]: {
-          amountCurrency,
-          selectedCurrency: targetControl.selectedCurrency
-        }
-      }, { emitEvent: false });
-    });
+    const valueChangesObserver = {
+      next: (val: CurrencySelection) => {
+        const targetControl = this.converterForm.get(targetControlName)!.value;
+        const amountCurrency = this.calculateAmount(val.amountCurrency, val.selectedCurrency, targetControl.selectedCurrency);
+        this.converterForm.patchValue({
+          [targetControlName]: {
+            amountCurrency,
+            selectedCurrency: targetControl.selectedCurrency
+          }
+        }, { emitEvent: false });
+      },
+      error: (error: Error) => {
+        console.error('Error:', error.message);
+      }
+    };
+    this.converterForm.get(changedControlName)!.valueChanges.subscribe(valueChangesObserver);
   }
 
   calculateAmount(amountFromCurrency: number, selectedFromCurrency: string, selectedToCurrency: string): number {
