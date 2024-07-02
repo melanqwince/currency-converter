@@ -1,45 +1,30 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { NgSelectModule } from '@ng-select/ng-select';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { DataService } from '../../services/data.service';
+import { CurrencySelectorComponent } from '../currency-selector/currency-selector.component';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ConversionRates } from '../../interfaces/conversion-rates.interface';
 import * as cc from 'currency-codes';
+import { CurrencySelection } from '../../interfaces/currency-selection.interface';
 
 @Component({
   selector: 'app-converter',
   standalone: true,
   imports: [
-    FormsModule,
-    NgSelectModule
+    CurrencySelectorComponent,
+    ReactiveFormsModule
   ],
   templateUrl: './converter.component.html',
   styleUrl: './converter.component.scss'
 })
-export class ConverterComponent implements OnChanges {
+export class ConverterComponent implements OnInit, OnChanges {
   @Input('rates') rates!: ConversionRates;
   currencies: { value: string, name: string }[] = [];
-  selectedFromCurrency!: string;
-  selectedToCurrency!: string;
-  amountFromCurrency!: number;
-  amountToCurrency!: number;
+
+  converterForm!: FormGroup;
   
-  constructor(private dataService: DataService) {}
-
-  currencyAmountFromChanges() {
-    this.amountToCurrency = this.dataService.convertCurrency(this.amountFromCurrency, this.selectedFromCurrency, this.selectedToCurrency, this.rates);
-  }
-
-  currencyAmountToChanges() {
-    this.amountFromCurrency = this.dataService.convertCurrency(this.amountToCurrency, this.selectedToCurrency, this.selectedFromCurrency, this.rates);
-  }
-
-  reverseCurrencies() {
-    const selectedFromCurrency = this.selectedFromCurrency;
-    this.selectedFromCurrency = this.selectedToCurrency;
-    this.selectedToCurrency = selectedFromCurrency;
-    this.currencyAmountFromChanges();
-  }
-
+  constructor(
+    private dataService: DataService,
+    private fb: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['rates'] && changes['rates'].currentValue) {
@@ -48,10 +33,54 @@ export class ConverterComponent implements OnChanges {
           this.currencies.push({ value: currency, name: cc.code(currency)!.currency });
         }
       });
-      this.selectedFromCurrency = this.currencies[0].value;
-      this.selectedToCurrency = this.currencies[1].value;
-      this.amountFromCurrency = 1;
-      this.currencyAmountFromChanges();
     }
+  }
+
+  ngOnInit() {
+    this.buildForm();
+    this.handleCurrencyChanges('currencyFrom', 'currencyTo');
+    this.handleCurrencyChanges('currencyTo', 'currencyFrom');
+  }
+
+  buildForm() {
+    this.converterForm = this.fb.group({
+      currencyFrom: this.fb.control({ selectedCurrency: this.currencies[0].value, amountCurrency: 1 }),
+      currencyTo: this.fb.control({ selectedCurrency: this.currencies[1].value, amountCurrency: this.calculateAmount(1, this.currencies[0].value, this.currencies[1].value) })
+    });
+  }
+
+  handleCurrencyChanges(changedControlName: string, targetControlName: string) {
+    this.converterForm.get(changedControlName)!.valueChanges.subscribe((val: CurrencySelection) => {
+      const targetControl = this.converterForm.get(targetControlName)!.value;
+      const amountCurrency = this.calculateAmount(val.amountCurrency, val.selectedCurrency, targetControl.selectedCurrency);
+      this.converterForm.patchValue({
+        [targetControlName]: {
+          amountCurrency,
+          selectedCurrency: targetControl.selectedCurrency
+        }
+      }, { emitEvent: false });
+    });
+  }
+
+  calculateAmount(amountFromCurrency: number, selectedFromCurrency: string, selectedToCurrency: string): number {
+    return this.dataService.convertCurrency(amountFromCurrency, selectedFromCurrency, selectedToCurrency, this.rates);
+  }
+
+  reverseCurrencies() {
+    const currencyFromControl = this.converterForm.get('currencyFrom')!;
+    const currencyToControl = this.converterForm.get('currencyTo')!;
+  
+    const { selectedCurrency: selectedFromCurrency, amountCurrency: amountFromCurrency } = currencyFromControl.value;
+    const { selectedCurrency: selectedToCurrency, amountCurrency: amountToCurrency } = currencyToControl.value;
+  
+    currencyToControl.patchValue({
+      selectedCurrency: selectedFromCurrency,
+      amountCurrency: amountToCurrency
+    }, { emitEvent: false });
+  
+    currencyFromControl.patchValue({
+      selectedCurrency: selectedToCurrency,
+      amountCurrency: amountFromCurrency
+    });
   }
 }

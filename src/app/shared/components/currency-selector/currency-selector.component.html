@@ -1,0 +1,18 @@
+<div class="currency">
+    <ng-select [searchable]="false" [clearable]="false" (change)="currencyAmountChanges()" [(ngModel)]="selectedCurrency">
+        @for (currency of currencies; track currency.value) {
+            <ng-option [value]="currency.value">
+                <div class="currency__option">
+                    <div class="identification">
+                        <img [src]="'/assets/img/flags/' + currency.value.toLowerCase() + '.svg'" [alt]="currency.value">
+                        <b>{{ currency.value }}</b>
+                    </div>    
+                    <span>
+                        {{ currency.name }}
+                    </span>
+                </div>
+            </ng-option>
+        }
+    </ng-select>
+    <input (input)="currencyAmountChanges()" [(ngModel)]="amountCurrency" type="number">
+</div>
