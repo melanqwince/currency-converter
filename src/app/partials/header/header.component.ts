@@ -20,7 +20,7 @@ export class HeaderComponent {
       next: (price: { usd: number, eur: number } | null) => {
         if (price) {
           this.priceUSD = price.usd;
-          this.priceUSD = price.eur;
+          this.priceEUR = price.eur;
         }
       },
       error: (error: Error) => {
