@@ -2,7 +2,7 @@ import { Component, forwardRef, Input } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { CurrencySelection } from '../../interfaces/currency-selection.interface';
+import { CurrencySelection } from '@app/shared/interfaces/currency-selection.interface';
 
 @Component({
   selector: 'app-currency-selector',
@@ -34,8 +34,6 @@ export class CurrencySelectorComponent implements ControlValueAccessor {
     }
   }
 
-
-
   currencyAmountChanges(): void {
     this.onChange({
       selectedCurrency: this.selectedCurrency,
@@ -43,7 +41,6 @@ export class CurrencySelectorComponent implements ControlValueAccessor {
     });
     this.onTouched();
   }
-
 
   registerOnChange(fn: (value: CurrencySelection) => void): void {
     this.onChange = fn;

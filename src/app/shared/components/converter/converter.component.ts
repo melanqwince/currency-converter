@@ -1,10 +1,10 @@
 import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
-import { DataService } from '../../services/data.service';
-import { CurrencySelectorComponent } from '../currency-selector/currency-selector.component';
+import { DataService } from '@app/shared/services/data.service';
+import { CurrencySelectorComponent } from '@app/shared/components/currency-selector/currency-selector.component';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
-import { ConversionRates } from '../../interfaces/conversion-rates.interface';
+import { ConversionRates } from '@app/shared/interfaces/conversion-rates.interface';
+import { CurrencySelection } from '@app/shared/interfaces/currency-selection.interface';
 import * as cc from 'currency-codes';
-import { CurrencySelection } from '../../interfaces/currency-selection.interface';
 
 @Component({
   selector: 'app-converter',

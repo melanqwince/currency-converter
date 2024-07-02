@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { environment } from '@env/environment';
 import { HttpClient} from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { ConversionRates } from '../interfaces/conversion-rates.interface';
+import { ConversionRates } from '@app/shared/interfaces/conversion-rates.interface';
 
 @Injectable({
   providedIn: 'root'
