@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { environment } from '../../../environments/environment';
 import { HttpClient} from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -10,9 +10,11 @@ import { ConversionRates } from '../interfaces/conversion-rates.interface';
 })
 export class DataService {
 
+
+  private conversionRates: ConversionRates | null = null;
+
   //price in UAH
-  public priceUSD = new BehaviorSubject<number | null>(null);
-  public priceEUR = new BehaviorSubject<number | null>(null);
+  public pricesToUAH = new BehaviorSubject<{ usd: number, eur: number } | null>(null);
   
   public readonly defaultCurrencies = [
     'USD', 'EUR', 'UAH', 'GBP', 'PLN'
@@ -20,11 +22,19 @@ export class DataService {
 
   constructor(private http: HttpClient) { }
 
-  public getData(currency: string = 'USD'): Observable<ConversionRates> {
-    return this.http.get<any>(environment.API + environment.API_KEY + '/latest/' + currency)
+  public loadInitData(currency: string = 'USD'): Observable<ConversionRates> {
+    return this.http.get<{ conversion_rates: ConversionRates }>(environment.API + environment.API_KEY + '/latest/' + currency)
       .pipe(
         map(response => response.conversion_rates)
       );
+  }
+
+  public setConversionRates(rates: ConversionRates) {
+    this.conversionRates = rates;
+  }
+
+  public getConversionRates() {
+    return this.conversionRates;
   }
 
   public convertCurrency(amount: number, fromCurrency: string, toCurrency: string, rates: ConversionRates) {

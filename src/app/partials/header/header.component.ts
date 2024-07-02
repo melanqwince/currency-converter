@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { DataService } from '../services/data.service';
+import { DataService } from '../../shared/services/data.service';
 
 
 @Component({
@@ -11,15 +11,15 @@ import { DataService } from '../services/data.service';
 })
 export class HeaderComponent {
 
-  priceEUR: number | null = null;
-  priceUSD: number | null = null;
+  priceEUR!: number;
+  priceUSD!: number;
 
   constructor(private dataService: DataService) {
-    this.dataService.priceUSD.subscribe((price) => {
-      this.priceUSD = price;
-    });
-    this.dataService.priceEUR.subscribe((price) => {
-      this.priceEUR = price;
+    this.dataService.pricesToUAH.subscribe((price) => {
+      if (price) {
+        this.priceUSD = price.usd;
+        this.priceUSD = price.eur;
+      }
     });
   }
 

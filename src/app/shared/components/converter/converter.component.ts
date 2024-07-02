@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { NgSelectModule } from '@ng-select/ng-select';
-import { DataService } from '../services/data.service';
-import { ConversionRates } from '../interfaces/conversion-rates.interface';
+import { DataService } from '../../services/data.service';
+import { ConversionRates } from '../../interfaces/conversion-rates.interface';
 import * as cc from 'currency-codes';
 
 @Component({
