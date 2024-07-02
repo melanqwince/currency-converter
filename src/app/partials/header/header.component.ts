@@ -15,12 +15,20 @@ export class HeaderComponent {
   priceUSD!: number;
 
   constructor(private dataService: DataService) {
-    this.dataService.pricesToUAH.subscribe((price) => {
-      if (price) {
-        this.priceUSD = price.usd;
-        this.priceUSD = price.eur;
+
+    const priceObserver = {
+      next: (price: { usd: number, eur: number } | null) => {
+        if (price) {
+          this.priceUSD = price.usd;
+          this.priceUSD = price.eur;
+        }
+      },
+      error: (error: Error) => {
+        console.error('Error:', error.message);
       }
-    });
+    };
+
+    this.dataService.pricesToUAH.subscribe(priceObserver);
   }
 
 }
