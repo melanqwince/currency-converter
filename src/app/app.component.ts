@@ -16,7 +16,7 @@ import { ConversionRates } from './shared/interfaces/conversion-rates.interface'
 export class AppComponent {
   title = 'currency-converter-test';
 
-  baseUSDRates!: ConversionRates;
+  baseUSDRates: ConversionRates | null = null;
 
   constructor(private dataService: DataService) {}
 
@@ -29,7 +29,13 @@ export class AppComponent {
 
       //save default prices for header in UAH
       const priceUSD: number = rates['UAH'];
-      const priceEUR: number = this.dataService.convertCurrency(1, 'EUR', 'UAH', rates);
+      const priceEUR: number = this.dataService.convertCurrency(
+        {
+          amount: 1, 
+          fromCurrency: 'EUR', 
+          toCurrency: 'UAH', 
+          rates
+        });
       this.dataService.pricesToUAH.next({ usd: Number(priceUSD.toFixed(2)), eur: Number(priceEUR.toFixed(2))});
     } else {
       console.error('Error', 'Conversion rates not found');

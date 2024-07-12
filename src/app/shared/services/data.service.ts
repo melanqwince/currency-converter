@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { HttpClient} from '@angular/common/http';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { ConversionRates } from '@app/shared/interfaces/conversion-rates.interface';
+import { ConvertCurrencyParams } from '../interfaces/convert-currency-params.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,12 @@ export class DataService {
   public loadInitData(currency: string = 'USD'): Observable<ConversionRates> {
     return this.http.get<{ conversion_rates: ConversionRates }>(environment.API + environment.API_KEY + '/latest/' + currency)
       .pipe(
-        map(response => response.conversion_rates)
+        map(response => response.conversion_rates),
+        catchError(error => {
+          console.error('Error loading conversion rates', error);
+          // Return an empty object or default rates as a fallback
+          return of({});
+        })
       );
   }
 
@@ -33,11 +39,11 @@ export class DataService {
     this.conversionRates = rates;
   }
 
-  public getConversionRates() {
+  public getConversionRates(): ConversionRates | null {
     return this.conversionRates;
   }
 
-  public convertCurrency(amount: number, fromCurrency: string, toCurrency: string, rates: ConversionRates) {
+  public convertCurrency({ amount, fromCurrency, toCurrency, rates }: ConvertCurrencyParams): number {
     // Ensure the currencies are in uppercase
     fromCurrency = fromCurrency.toUpperCase();
     toCurrency = toCurrency.toUpperCase();

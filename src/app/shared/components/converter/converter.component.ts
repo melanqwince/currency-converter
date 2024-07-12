@@ -5,6 +5,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ConversionRates } from '@app/shared/interfaces/conversion-rates.interface';
 import { CurrencySelection } from '@app/shared/interfaces/currency-selection.interface';
 import * as cc from 'currency-codes';
+import { Subject, takeUntil } from 'rxjs';
+
 
 @Component({
   selector: 'app-converter',
@@ -17,22 +19,43 @@ import * as cc from 'currency-codes';
   styleUrl: './converter.component.scss'
 })
 export class ConverterComponent implements OnInit, OnChanges {
-  @Input('rates') rates!: ConversionRates;
+  @Input('rates') rates: ConversionRates | null = null;
   currencies: { value: string, name: string }[] = [];
 
   converterForm!: FormGroup;
+
+  private destroy$ = new Subject<void>();
   
   constructor(
     private dataService: DataService,
     private fb: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['rates'] && changes['rates'].currentValue) {
-      this.dataService.defaultCurrencies.forEach((currency) => {
-        if (this.rates[currency]) {
-          this.currencies.push({ value: currency, name: cc.code(currency)!.currency });
-        }
-      });
+    if (this.hasRatesChanged(changes)) {
+      this.updateCurrencies();
+    }
+  }
+  
+  private hasRatesChanged(changes: SimpleChanges): boolean {
+    return changes['rates'] && changes['rates'].currentValue;
+  }
+  
+  private updateCurrencies(): void {
+    this.dataService.defaultCurrencies.forEach((currency) => {
+      if (this.isRateAvailable(currency)) {
+        this.addCurrency(currency);
+      }
+    });
+  }
+  
+  private isRateAvailable(currency: string): boolean {
+    return !!this.rates![currency];
+  }
+  
+  private addCurrency(currency: string): void {
+    const currencyCode = cc.code(currency);
+    if (currencyCode) {
+      this.currencies.push({ value: currency, name: currencyCode.currency });
     }
   }
 
@@ -50,7 +73,7 @@ export class ConverterComponent implements OnInit, OnChanges {
   }
 
   handleCurrencyChanges(changedControlName: string, targetControlName: string) {
-    const valueChangesObserver = {
+    this.converterForm.get(changedControlName)!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe({
       next: (val: CurrencySelection) => {
         const targetControl = this.converterForm.get(targetControlName)!.value;
         const amountCurrency = this.calculateAmount(val.amountCurrency, val.selectedCurrency, targetControl.selectedCurrency);
@@ -64,29 +87,39 @@ export class ConverterComponent implements OnInit, OnChanges {
       error: (error: Error) => {
         console.error('Error:', error.message);
       }
-    };
-    this.converterForm.get(changedControlName)!.valueChanges.subscribe(valueChangesObserver);
+    });
   }
 
   calculateAmount(amountFromCurrency: number, selectedFromCurrency: string, selectedToCurrency: string): number {
-    return this.dataService.convertCurrency(amountFromCurrency, selectedFromCurrency, selectedToCurrency, this.rates);
+    return this.dataService.convertCurrency({
+      amount: amountFromCurrency,
+      fromCurrency: selectedFromCurrency, 
+      toCurrency: selectedToCurrency, 
+      rates: this.rates!
+    });
   }
 
-  reverseCurrencies() {
-    const currencyFromControl = this.converterForm.get('currencyFrom')!;
-    const currencyToControl = this.converterForm.get('currencyTo')!;
-  
-    const { selectedCurrency: selectedFromCurrency, amountCurrency: amountFromCurrency } = currencyFromControl.value;
-    const { selectedCurrency: selectedToCurrency, amountCurrency: amountToCurrency } = currencyToControl.value;
-  
-    currencyToControl.patchValue({
-      selectedCurrency: selectedFromCurrency,
-      amountCurrency: amountToCurrency
-    }, { emitEvent: false });
-  
-    currencyFromControl.patchValue({
-      selectedCurrency: selectedToCurrency,
-      amountCurrency: amountFromCurrency
-    });
+ reverseCurrencies() {
+  const { currencyFrom, currencyTo } = this.converterForm.controls;
+
+  const currencyFromValue = currencyFrom.value;
+  const currencyToValue = currencyTo.value;
+
+  currencyFrom.patchValue({
+    selectedCurrency: currencyToValue.selectedCurrency,
+    amountCurrency: currencyToValue.amountCurrency
+  });
+
+  currencyTo.patchValue({
+    selectedCurrency: currencyFromValue.selectedCurrency,
+    amountCurrency: currencyFromValue.amountCurrency
+  }, { emitEvent: false });
+}
+
+  ngOnDestroy(): void {
+    // Emit a value to the destroy$ subject to notify subscribers to complete
+    this.destroy$.next();
+    // Complete the destroy$ subject
+    this.destroy$.complete();
   }
 }
